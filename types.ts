@@ -21,3 +21,11 @@ export enum ViewState {
 export interface AdminContextState {
   isAuthenticated: boolean;
 }
+
+export interface GithubConfig {
+  owner: string;
+  repo: string;
+  path: string; // e.g., 'posts' or 'content/blog'
+  token: string;
+  branch?: string;
+}
