@@ -19,9 +19,11 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
+      setStatus(null);
   }, [initialPost]);
 
 
@@ -42,8 +44,9 @@ ${editorPost.content}
   };
 
   const handleDownloadFile = () => {
+    setStatus(null);
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setStatus({ type: 'error', message: "Title and Slug are required." });
         return;
     }
     const fileContent = generateFileContent();
@@ -57,12 +60,13 @@ ${editorPost.content}
   };
 
   const handlePublishToGithub = async () => {
+      setStatus(null);
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setStatus({ type: 'error', message: "Please provide a Title and Slug." });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setStatus({ type: 'error', message: "Please configure GitHub settings in the Dashboard first." });
           return;
       }
 
@@ -75,17 +79,21 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setStatus({ type: 'success', message: "Successfully published to GitHub! 🚀" });
 
           const newPostObj = {
             ...editorPost as BlogPost,
             date: editorPost.date || new Date().toISOString().split('T')[0],
             tags: editorPost.tags || [],
           };
-          onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+
+          // Delay to show success message before closing
+          setTimeout(() => {
+              onUpdateLocal(newPostObj);
+              onClose();
+          }, 1500);
       } else {
-          alert(`Error: ${result.error}`);
+          setStatus({ type: 'error', message: `Error: ${result.error}` });
       }
   };
 
@@ -107,7 +115,8 @@ ${editorPost.content}
 
   return (
     <div className="flex flex-col h-full">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex justify-between items-center">
             <button onClick={onClose} className="text-sm text-gray-500 hover:text-black">← Back</button>
             <div className="flex gap-3">
                  <button
@@ -118,7 +127,7 @@ ${editorPost.content}
                 </button>
                  <button
                     onClick={handlePublishToGithub}
-                    disabled={isPublishing}
+                    disabled={isPublishing || (status?.type === 'success')}
                     className="bg-black text-white px-6 py-2 font-mono text-sm hover:bg-gray-800 flex items-center gap-2"
                 >
                     {isPublishing ? (
@@ -134,10 +143,25 @@ ${editorPost.content}
             </div>
         </div>
 
+          {status && (
+            <div
+                role="alert"
+                className={`p-3 rounded-sm text-sm border ${
+                    status.type === 'error'
+                        ? 'bg-red-50 border-red-200 text-red-700'
+                        : 'bg-green-50 border-green-200 text-green-700'
+                }`}
+            >
+                {status.message}
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
                 <input
                     type="text"
+                    aria-label="Post Title"
                     placeholder="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
@@ -146,6 +170,7 @@ ${editorPost.content}
                  <div className="flex gap-4">
                     <input
                         type="text"
+                        aria-label="URL Slug"
                         placeholder="slug-url"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.slug}
@@ -153,6 +178,7 @@ ${editorPost.content}
                     />
                      <input
                         type="text"
+                        aria-label="Category"
                         placeholder="Category"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.category}
@@ -195,6 +221,7 @@ ${editorPost.content}
                  </button>
              </div>
             <textarea
+                aria-label="Post Content"
                 className="w-full h-full p-6 font-mono text-sm leading-relaxed border border-gray-200 focus:outline-none resize-none bg-gray-50 text-gray-800"
                 value={editorPost.content}
                 onChange={(e) => setEditorPost({...editorPost, content: e.target.value})}
