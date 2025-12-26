@@ -13,10 +13,15 @@ export const Home: React.FC<HomeProps> = ({ posts, onNavigatePost }) => {
         <h2 className="text-lg font-mono text-gray-500 mb-2">/latest</h2>
       </div>
       {posts.map(post => (
-        <article key={post.slug} className="group cursor-pointer" onClick={() => onNavigatePost(post.slug)}>
+        <article key={post.slug} className="group relative">
           <div className="flex flex-col md:flex-row md:items-baseline gap-2 mb-2">
-            <h2 className="text-2xl font-bold group-hover:underline decoration-2 decoration-gray-300 underline-offset-4">
-              {post.title}
+            <h2 className="text-2xl font-bold">
+              <button
+                onClick={() => onNavigatePost(post.slug)}
+                className="text-left before:absolute before:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-4 rounded-sm group-hover:underline decoration-2 decoration-gray-300 underline-offset-4"
+              >
+                {post.title}
+              </button>
             </h2>
             <span className="font-mono text-xs text-gray-400 shrink-0">{post.date}</span>
           </div>
