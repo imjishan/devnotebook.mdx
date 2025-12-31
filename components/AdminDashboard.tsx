@@ -18,6 +18,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success'>('idle');
 
   useEffect(() => {
     setLocalConfig(githubConfig);
@@ -25,8 +26,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      alert("Configuration Saved");
+      setSaveStatus('success');
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setShowConfig(false);
+      }, 1000);
   };
 
   return (
@@ -48,32 +52,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="gh-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
+                            id="gh-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="gh-repo" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
+                            id="gh-repo"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="gh-path" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
+                            id="gh-path"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="gh-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
+                            id="gh-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
@@ -81,7 +89,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
-                <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                <button
+                  onClick={handleSaveConfig}
+                  disabled={saveStatus === 'success'}
+                  className={`mt-4 text-xs px-4 py-2 transition-all duration-300 ${
+                    saveStatus === 'success'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-900 text-white hover:bg-black'
+                  }`}
+                >
+                  {saveStatus === 'success' ? '✓ Saved' : 'Save Configuration'}
+                </button>
             </div>
         )}
 
