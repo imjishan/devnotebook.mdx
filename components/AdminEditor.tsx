@@ -138,6 +138,7 @@ ${editorPost.content}
             <div className="space-y-4">
                 <input
                     type="text"
+                    aria-label="Post Title"
                     placeholder="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
@@ -146,6 +147,7 @@ ${editorPost.content}
                  <div className="flex gap-4">
                     <input
                         type="text"
+                        aria-label="Post Slug"
                         placeholder="slug-url"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.slug}
@@ -153,6 +155,7 @@ ${editorPost.content}
                     />
                      <input
                         type="text"
+                        aria-label="Post Category"
                         placeholder="Category"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.category}
@@ -161,8 +164,9 @@ ${editorPost.content}
                  </div>
 
                  <div className="relative">
-                    <label className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
+                    <label htmlFor="seo-description" className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
                     <textarea
+                        id="seo-description"
                         className="w-full border border-gray-200 p-2 text-sm focus:outline-none focus:border-black min-h-[80px]"
                         value={editorPost.description}
                         onChange={(e) => setEditorPost({...editorPost, description: e.target.value})}
