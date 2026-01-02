@@ -48,32 +48,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="repo-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
+                            id="repo-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="repo-name" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
+                            id="repo-name"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="target-folder" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
+                            id="target-folder"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="github-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
+                            id="github-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
