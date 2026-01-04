@@ -19,11 +19,18 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{type: 'error' | 'success', text: string} | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
   }, [initialPost]);
 
+  useEffect(() => {
+    if (statusMsg?.type === 'success') {
+      const timer = setTimeout(() => setStatusMsg(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [statusMsg]);
 
   const generateFileContent = () => {
       return `---
@@ -43,9 +50,10 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setStatusMsg({ type: 'error', text: "Title and Slug are required." });
         return;
     }
+    setStatusMsg(null);
     const fileContent = generateFileContent();
     const blob = new Blob([fileContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -58,14 +66,15 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setStatusMsg({ type: 'error', text: "Please provide a Title and Slug." });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setStatusMsg({ type: 'error', text: "Please configure GitHub settings in the Dashboard first." });
           return;
       }
 
+      setStatusMsg(null);
       setIsPublishing(true);
       const content = generateFileContent();
       const filename = `${editorPost.slug}.mdx`;
@@ -75,17 +84,20 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setStatusMsg({ type: 'success', text: "Successfully published to GitHub! 🚀" });
 
-          const newPostObj = {
-            ...editorPost as BlogPost,
-            date: editorPost.date || new Date().toISOString().split('T')[0],
-            tags: editorPost.tags || [],
-          };
-          onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+          // Delay closing to let user see success message
+          setTimeout(() => {
+            const newPostObj = {
+                ...editorPost as BlogPost,
+                date: editorPost.date || new Date().toISOString().split('T')[0],
+                tags: editorPost.tags || [],
+            };
+            onUpdateLocal(newPostObj);
+            onClose(); // Go back to dashboard
+          }, 1500);
       } else {
-          alert(`Error: ${result.error}`);
+          setStatusMsg({ type: 'error', text: `Error: ${result.error}` });
       }
   };
 
@@ -106,31 +118,46 @@ ${editorPost.content}
   }, [editorPost.content]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
         <div className="flex justify-between items-center mb-6">
             <button onClick={onClose} className="text-sm text-gray-500 hover:text-black">← Back</button>
-            <div className="flex gap-3">
-                 <button
-                    onClick={handleDownloadFile}
-                    className="text-gray-500 hover:text-black px-4 py-2 font-mono text-sm underline"
-                >
-                    Download .mdx
-                </button>
-                 <button
-                    onClick={handlePublishToGithub}
-                    disabled={isPublishing}
-                    className="bg-black text-white px-6 py-2 font-mono text-sm hover:bg-gray-800 flex items-center gap-2"
-                >
-                    {isPublishing ? (
-                        <>
-                            <span className="animate-spin">⟳</span> Publishing...
-                        </>
-                    ) : (
-                        <>
-                            <span>↑</span> Publish to GitHub
-                        </>
-                    )}
-                </button>
+
+            <div className="flex items-center gap-4">
+                {statusMsg && (
+                    <div
+                        role="alert"
+                        className={`text-sm font-mono px-3 py-1 rounded-sm ${
+                            statusMsg.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                        }`}
+                    >
+                        {statusMsg.text}
+                    </div>
+                )}
+
+                <div className="flex gap-3">
+                     <button
+                        onClick={handleDownloadFile}
+                        className="text-gray-500 hover:text-black px-4 py-2 font-mono text-sm underline focus-visible:ring-2 focus-visible:ring-black rounded-sm"
+                    >
+                        Download .mdx
+                    </button>
+                     <button
+                        onClick={handlePublishToGithub}
+                        disabled={isPublishing}
+                        className="bg-black text-white px-6 py-2 font-mono text-sm hover:bg-gray-800 flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black rounded-sm"
+                    >
+                        {isPublishing ? (
+                            <>
+                                <span className="animate-spin" aria-hidden="true">⟳</span>
+                                <span role="status">Publishing...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span aria-hidden="true">↑</span> Publish to GitHub
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -138,6 +165,7 @@ ${editorPost.content}
             <div className="space-y-4">
                 <input
                     type="text"
+                    aria-label="Post Title"
                     placeholder="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
@@ -146,6 +174,7 @@ ${editorPost.content}
                  <div className="flex gap-4">
                     <input
                         type="text"
+                        aria-label="URL Slug"
                         placeholder="slug-url"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.slug}
@@ -153,6 +182,7 @@ ${editorPost.content}
                     />
                      <input
                         type="text"
+                        aria-label="Category"
                         placeholder="Category"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.category}
@@ -161,8 +191,9 @@ ${editorPost.content}
                  </div>
 
                  <div className="relative">
-                    <label className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
+                    <label htmlFor="seo-desc" className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
                     <textarea
+                        id="seo-desc"
                         className="w-full border border-gray-200 p-2 text-sm focus:outline-none focus:border-black min-h-[80px]"
                         value={editorPost.description}
                         onChange={(e) => setEditorPost({...editorPost, description: e.target.value})}
@@ -195,6 +226,7 @@ ${editorPost.content}
                  </button>
              </div>
             <textarea
+                aria-label="Markdown Content"
                 className="w-full h-full p-6 font-mono text-sm leading-relaxed border border-gray-200 focus:outline-none resize-none bg-gray-50 text-gray-800"
                 value={editorPost.content}
                 onChange={(e) => setEditorPost({...editorPost, content: e.target.value})}
