@@ -19,6 +19,14 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (statusMessage) {
+      const timer = setTimeout(() => setStatusMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [statusMessage]);
 
   useEffect(() => {
       setEditorPost(initialPost);
@@ -43,7 +51,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setStatusMessage({ text: "Title and Slug are required.", type: 'error' });
         return;
     }
     const fileContent = generateFileContent();
@@ -58,15 +66,16 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setStatusMessage({ text: "Please provide a Title and Slug.", type: 'error' });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setStatusMessage({ text: "Please configure GitHub settings in the Dashboard first.", type: 'error' });
           return;
       }
 
       setIsPublishing(true);
+      setStatusMessage(null);
       const content = generateFileContent();
       const filename = `${editorPost.slug}.mdx`;
       const message = `feat(blog): update ${editorPost.slug}`;
@@ -75,17 +84,19 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setStatusMessage({ text: "Successfully published to GitHub! 🚀", type: 'success' });
 
-          const newPostObj = {
-            ...editorPost as BlogPost,
-            date: editorPost.date || new Date().toISOString().split('T')[0],
-            tags: editorPost.tags || [],
-          };
-          onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+          setTimeout(() => {
+            const newPostObj = {
+                ...editorPost as BlogPost,
+                date: editorPost.date || new Date().toISOString().split('T')[0],
+                tags: editorPost.tags || [],
+            };
+            onUpdateLocal(newPostObj);
+            onClose(); // Go back to dashboard
+          }, 1500);
       } else {
-          alert(`Error: ${result.error}`);
+          setStatusMessage({ text: `Error: ${result.error}`, type: 'error' });
       }
   };
 
@@ -109,7 +120,12 @@ ${editorPost.content}
     <div className="flex flex-col h-full">
         <div className="flex justify-between items-center mb-6">
             <button onClick={onClose} className="text-sm text-gray-500 hover:text-black">← Back</button>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+                 {statusMessage && (
+                    <div role="alert" className={`text-xs font-mono px-3 py-1 rounded ${statusMessage.type === 'error' ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
+                        {statusMessage.text}
+                    </div>
+                 )}
                  <button
                     onClick={handleDownloadFile}
                     className="text-gray-500 hover:text-black px-4 py-2 font-mono text-sm underline"
