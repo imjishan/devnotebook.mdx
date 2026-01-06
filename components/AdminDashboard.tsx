@@ -18,6 +18,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
 
   useEffect(() => {
     setLocalConfig(githubConfig);
@@ -25,8 +26,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      alert("Configuration Saved");
+      setSaveStatus('saved');
+
+      setTimeout(() => {
+          setSaveStatus('idle');
+          setShowConfig(false);
+      }, 1500);
   };
 
   return (
@@ -81,7 +86,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
-                <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                <div className="flex items-center gap-4 mt-4">
+                    <button
+                        onClick={handleSaveConfig}
+                        className="bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black disabled:opacity-50 transition-all"
+                        disabled={saveStatus === 'saved'}
+                    >
+                        {saveStatus === 'saved' ? 'Saved' : 'Save Configuration'}
+                    </button>
+                    {saveStatus === 'saved' && (
+                        <span role="status" className="text-green-600 text-xs font-mono">
+                            ✓ Configuration saved successfully
+                        </span>
+                    )}
+                </div>
             </div>
         )}
 
