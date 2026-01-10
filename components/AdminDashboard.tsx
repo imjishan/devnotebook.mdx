@@ -23,14 +23,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setLocalConfig(githubConfig);
   }, [githubConfig]);
 
+  const [successMessage, setSuccessMessage] = useState('');
+
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
       setShowConfig(false);
-      alert("Configuration Saved");
+      setSuccessMessage("Configuration Saved");
+      setTimeout(() => setSuccessMessage(''), 2000);
   };
 
   return (
-    <div>
+    <div className="relative">
+        {successMessage && (
+          <div
+            role="status"
+            className="fixed bottom-8 right-8 bg-black text-white px-6 py-4 rounded shadow-lg z-50"
+          >
+            {successMessage}
+          </div>
+        )}
         <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
             <h2 className="font-mono text-xl">Admin Dashboard</h2>
             <div className="flex gap-4">
