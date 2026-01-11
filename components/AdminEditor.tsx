@@ -8,13 +8,15 @@ interface AdminEditorProps {
   githubConfig: GithubConfig;
   onClose: () => void;
   onUpdateLocal: (post: BlogPost) => void;
+  showToast: (message: string, type: 'success' | 'error') => void;
 }
 
 export const AdminEditor: React.FC<AdminEditorProps> = ({
   initialPost,
   githubConfig,
   onClose,
-  onUpdateLocal
+  onUpdateLocal,
+  showToast
 }) => {
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
@@ -43,7 +45,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        showToast("Title and Slug are required.", "error");
         return;
     }
     const fileContent = generateFileContent();
@@ -58,11 +60,11 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          showToast("Please provide a Title and Slug.", "error");
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          showToast("Please configure GitHub settings in the Dashboard first.", "error");
           return;
       }
 
@@ -75,7 +77,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          showToast("Successfully published to GitHub! 🚀", "success");
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -85,7 +87,7 @@ ${editorPost.content}
           onUpdateLocal(newPostObj);
           onClose(); // Go back to dashboard
       } else {
-          alert(`Error: ${result.error}`);
+          showToast(`Error: ${result.error}`, "error");
       }
   };
 

@@ -7,6 +7,7 @@ interface AdminDashboardProps {
   onSaveConfig: (config: GithubConfig) => void;
   onCreateNew: () => void;
   onEdit: (post: BlogPost) => void;
+  showToast: (message: string, type: 'success' | 'error') => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -14,7 +15,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   githubConfig,
   onSaveConfig,
   onCreateNew,
-  onEdit
+  onEdit,
+  showToast
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
@@ -26,7 +28,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
       setShowConfig(false);
-      alert("Configuration Saved");
+      showToast("Configuration Saved", "success");
   };
 
   return (
