@@ -9,9 +9,11 @@ import { PostView } from './components/PostView';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminEditor } from './components/AdminEditor';
+import { Toast } from './components/Toast';
 
 const App: React.FC = () => {
   // --- State ---
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [viewState, setViewState] = useState<ViewState>(ViewState.HOME);
   const [activePost, setActivePost] = useState<BlogPost | null>(null);
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>({
@@ -29,6 +31,10 @@ const App: React.FC = () => {
   const { githubConfig, saveConfig } = useGithubConfig();
 
   // --- Handlers ---
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+  };
 
   const handleNavigateHome = () => {
     setViewState(ViewState.HOME);
@@ -83,6 +89,13 @@ const App: React.FC = () => {
 
   return (
     <Layout onNavigateHome={handleNavigateHome} onNavigateAdmin={handleNavigateAdmin}>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {viewState === ViewState.HOME && (
           <Home posts={posts} onNavigatePost={handleNavigatePost} />
       )}
@@ -99,6 +112,7 @@ const App: React.FC = () => {
             onSaveConfig={saveConfig}
             onCreateNew={handleCreateNew}
             onEdit={handleEdit}
+            showToast={showToast}
           />
       )}
       {viewState === ViewState.ADMIN_EDITOR && (
@@ -107,6 +121,7 @@ const App: React.FC = () => {
             githubConfig={githubConfig}
             onClose={handleCloseEditor}
             onUpdateLocal={updateLocalPostList}
+            showToast={showToast}
           />
       )}
     </Layout>
