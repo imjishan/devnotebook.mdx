@@ -18,6 +18,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
 
   useEffect(() => {
     setLocalConfig(githubConfig);
@@ -25,8 +26,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      alert("Configuration Saved");
+      setSaveStatus('saved');
+      setTimeout(() => {
+          setSaveStatus('idle');
+          setShowConfig(false);
+      }, 1000);
   };
 
   return (
@@ -48,32 +52,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="github-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
+                            id="github-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="github-repo" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
+                            id="github-repo"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="github-path" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
+                            id="github-path"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="github-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
+                            id="github-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
@@ -81,7 +89,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
-                <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                <button
+                    onClick={handleSaveConfig}
+                    className={`mt-4 text-xs px-4 py-2 transition-colors ${
+                        saveStatus === 'saved'
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-900 text-white hover:bg-black'
+                    }`}
+                >
+                    {saveStatus === 'saved' ? 'Saved!' : 'Save Configuration'}
+                </button>
             </div>
         )}
 
@@ -92,7 +109,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <h3 className="font-bold">{post.title}</h3>
                         <p className="text-xs text-gray-400 font-mono">{post.slug}</p>
                     </div>
-                    <button onClick={() => onEdit(post)} className="text-sm underline">
+                    <button
+                        onClick={() => onEdit(post)}
+                        className="text-sm underline"
+                        aria-label={`Edit post: ${post.title}`}
+                    >
                         Edit
                     </button>
                 </div>
