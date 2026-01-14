@@ -19,11 +19,18 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
   }, [initialPost]);
 
+  useEffect(() => {
+    if (status?.type === 'success') {
+      const timer = setTimeout(() => setStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
   const generateFileContent = () => {
       return `---
@@ -43,9 +50,10 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setStatus({ type: 'error', message: "Title and Slug are required." });
         return;
     }
+    setStatus(null);
     const fileContent = generateFileContent();
     const blob = new Blob([fileContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -58,15 +66,16 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setStatus({ type: 'error', message: "Please provide a Title and Slug." });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setStatus({ type: 'error', message: "Please configure GitHub settings in the Dashboard first." });
           return;
       }
 
       setIsPublishing(true);
+      setStatus(null);
       const content = generateFileContent();
       const filename = `${editorPost.slug}.mdx`;
       const message = `feat(blog): update ${editorPost.slug}`;
@@ -75,7 +84,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setStatus({ type: 'success', message: "Successfully published to GitHub! 🚀" });
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -85,7 +94,7 @@ ${editorPost.content}
           onUpdateLocal(newPostObj);
           onClose(); // Go back to dashboard
       } else {
-          alert(`Error: ${result.error}`);
+          setStatus({ type: 'error', message: `Error: ${result.error}` });
       }
   };
 
@@ -134,10 +143,24 @@ ${editorPost.content}
             </div>
         </div>
 
+        {status && (
+            <div
+                role={status.type === 'error' ? 'alert' : 'status'}
+                className={`px-4 py-2 text-sm font-mono border rounded-sm mb-4 flex items-center gap-2 ${
+                    status.type === 'error'
+                        ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-green-50 text-green-700 border-green-200'
+                }`}
+            >
+                {status.type === 'error' ? '⚠️' : '✅'} {status.message}
+            </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
                 <input
                     type="text"
+                    aria-label="Post Title"
                     placeholder="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
@@ -146,6 +169,7 @@ ${editorPost.content}
                  <div className="flex gap-4">
                     <input
                         type="text"
+                        aria-label="Slug URL"
                         placeholder="slug-url"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.slug}
@@ -153,6 +177,7 @@ ${editorPost.content}
                     />
                      <input
                         type="text"
+                        aria-label="Category"
                         placeholder="Category"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.category}
