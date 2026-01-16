@@ -139,25 +139,34 @@ ${editorPost.content}
                 <input
                     type="text"
                     placeholder="Post Title"
+                    aria-label="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
                     onChange={(e) => setEditorPost({...editorPost, title: e.target.value})}
                 />
                  <div className="flex gap-4">
-                    <input
-                        type="text"
-                        placeholder="slug-url"
-                        className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
-                        value={editorPost.slug}
-                        onChange={(e) => setEditorPost({...editorPost, slug: e.target.value})}
-                    />
-                     <input
-                        type="text"
-                        placeholder="Category"
-                        className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
-                        value={editorPost.category}
-                        onChange={(e) => setEditorPost({...editorPost, category: e.target.value})}
-                    />
+                    <div className="w-1/2">
+                        <label htmlFor="post-slug" className="block text-xs font-mono text-gray-400 mb-1">Slug</label>
+                        <input
+                            id="post-slug"
+                            type="text"
+                            placeholder="slug-url"
+                            className="w-full font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
+                            value={editorPost.slug}
+                            onChange={(e) => setEditorPost({...editorPost, slug: e.target.value})}
+                        />
+                    </div>
+                    <div className="w-1/2">
+                        <label htmlFor="post-category" className="block text-xs font-mono text-gray-400 mb-1">Category</label>
+                        <input
+                            id="post-category"
+                            type="text"
+                            placeholder="Category"
+                            className="w-full font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
+                            value={editorPost.category}
+                            onChange={(e) => setEditorPost({...editorPost, category: e.target.value})}
+                        />
+                    </div>
                  </div>
 
                  <div className="relative">
@@ -195,6 +204,7 @@ ${editorPost.content}
                  </button>
              </div>
             <textarea
+                aria-label="Markdown Content"
                 className="w-full h-full p-6 font-mono text-sm leading-relaxed border border-gray-200 focus:outline-none resize-none bg-gray-50 text-gray-800"
                 value={editorPost.content}
                 onChange={(e) => setEditorPost({...editorPost, content: e.target.value})}
