@@ -18,6 +18,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [saveStatus, setSaveStatus] = useState<'saved' | null>(null);
 
   useEffect(() => {
     setLocalConfig(githubConfig);
@@ -25,8 +26,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      alert("Configuration Saved");
+      setSaveStatus('saved');
+      setTimeout(() => {
+          setSaveStatus(null);
+          setShowConfig(false);
+      }, 1000);
   };
 
   return (
@@ -34,7 +38,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
             <h2 className="font-mono text-xl">Admin Dashboard</h2>
             <div className="flex gap-4">
-                 <button onClick={() => setShowConfig(!showConfig)} className="text-sm font-mono text-gray-500 hover:text-black underline">
+                 <button
+                    onClick={() => setShowConfig(!showConfig)}
+                    className="text-sm font-mono text-gray-500 hover:text-black underline"
+                    aria-expanded={showConfig}
+                    aria-controls="config-panel"
+                 >
                     {showConfig ? 'Hide Config' : 'Connect Repo'}
                 </button>
                 <button onClick={onCreateNew} className="bg-black text-white px-4 py-2 font-mono text-sm hover:bg-gray-800">
@@ -44,36 +53,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {showConfig && (
-            <div className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
+            <div id="config-panel" className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="repo-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
+                            id="repo-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="repo-name" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
+                            id="repo-name"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="target-folder" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
+                            id="target-folder"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="access-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
+                            id="access-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
@@ -81,7 +94,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
-                <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                <div className="flex items-center gap-3 mt-4">
+                    <button
+                        onClick={handleSaveConfig}
+                        className="bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black transition-colors"
+                    >
+                        Save Configuration
+                    </button>
+                    {saveStatus === 'saved' && (
+                        <span role="status" className="text-green-600 text-xs font-mono">
+                            ✓ Saved
+                        </span>
+                    )}
+                </div>
             </div>
         )}
 
