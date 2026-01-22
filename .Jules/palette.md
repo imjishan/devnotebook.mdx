@@ -5,3 +5,7 @@
 ## 2026-01-01 - Accessible Card Pattern
 **Learning:** Making entire cards clickable by adding `onClick` to container divs hurts accessibility.
 **Action:** Use a semantic `<button>` inside the card's heading with `before:absolute before:inset-0` to cover the card. This preserves keyboard navigation and screen reader semantics.
+
+## 2026-10-24 - Async Success Feedback
+**Learning:** When replacing blocking `alert()` calls with inline toasts before navigating away, the message is often missed because the component unmounts immediately.
+**Action:** Implement a small delay (e.g., `setTimeout(() => close(), 2000)`) after setting the success state to allow the user to read the confirmation.
