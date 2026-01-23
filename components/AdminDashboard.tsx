@@ -18,15 +18,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
     setLocalConfig(githubConfig);
   }, [githubConfig]);
 
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => setStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
       setShowConfig(false);
-      alert("Configuration Saved");
+      setStatus({ type: 'success', message: 'Configuration Saved' });
   };
 
   return (
@@ -34,7 +42,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
             <h2 className="font-mono text-xl">Admin Dashboard</h2>
             <div className="flex gap-4">
-                 <button onClick={() => setShowConfig(!showConfig)} className="text-sm font-mono text-gray-500 hover:text-black underline">
+                 <button
+                   onClick={() => setShowConfig(!showConfig)}
+                   className="text-sm font-mono text-gray-500 hover:text-black underline"
+                   aria-expanded={showConfig}
+                   aria-controls="config-panel"
+                 >
                     {showConfig ? 'Hide Config' : 'Connect Repo'}
                 </button>
                 <button onClick={onCreateNew} className="bg-black text-white px-4 py-2 font-mono text-sm hover:bg-gray-800">
@@ -43,8 +56,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
         </div>
 
+        {status && (
+            <div
+              role="status"
+              className="mb-6 p-3 bg-green-50 border border-green-200 text-green-800 text-sm font-mono flex items-center gap-2 rounded-sm"
+            >
+               <span className="text-lg">✓</span> {status.message}
+            </div>
+        )}
+
         {showConfig && (
-            <div className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
+            <div id="config-panel" className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
