@@ -18,15 +18,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
     setLocalConfig(githubConfig);
   }, [githubConfig]);
 
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => setStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const handleSaveConfig = () => {
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      alert("Configuration Saved");
+      setStatus({ type: 'success', message: 'Configuration saved successfully' });
   };
 
   return (
@@ -34,7 +41,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
             <h2 className="font-mono text-xl">Admin Dashboard</h2>
             <div className="flex gap-4">
-                 <button onClick={() => setShowConfig(!showConfig)} className="text-sm font-mono text-gray-500 hover:text-black underline">
+                 <button
+                    onClick={() => setShowConfig(!showConfig)}
+                    className="text-sm font-mono text-gray-500 hover:text-black underline"
+                    aria-expanded={showConfig}
+                    aria-controls="config-panel"
+                >
                     {showConfig ? 'Hide Config' : 'Connect Repo'}
                 </button>
                 <button onClick={onCreateNew} className="bg-black text-white px-4 py-2 font-mono text-sm hover:bg-gray-800">
@@ -44,36 +56,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {showConfig && (
-            <div className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
+            <div id="config-panel" className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="github-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
+                            id="github-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="github-repo" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
+                            id="github-repo"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="github-path" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
+                            id="github-path"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="github-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
+                            id="github-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
@@ -81,6 +97,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
+                {status && (
+                    <div role="status" className={`mt-4 text-sm font-mono ${status.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                        {status.message}
+                    </div>
+                )}
                 <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
             </div>
         )}
