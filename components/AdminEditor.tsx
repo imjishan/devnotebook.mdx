@@ -19,10 +19,22 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
   }, [initialPost]);
+
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => setStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  const showStatus = (type: 'success' | 'error' | 'info', message: string) => {
+    setStatus({ type, message });
+  };
 
 
   const generateFileContent = () => {
@@ -43,7 +55,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        showStatus('error', "Title and Slug are required.");
         return;
     }
     const fileContent = generateFileContent();
@@ -58,11 +70,11 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          showStatus('error', "Please provide a Title and Slug.");
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          showStatus('error', "Please configure GitHub settings in the Dashboard first.");
           return;
       }
 
@@ -75,7 +87,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          showStatus('success', "Successfully published to GitHub! 🚀");
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -85,7 +97,7 @@ ${editorPost.content}
           onUpdateLocal(newPostObj);
           onClose(); // Go back to dashboard
       } else {
-          alert(`Error: ${result.error}`);
+          showStatus('error', `Error: ${result.error}`);
       }
   };
 
@@ -109,7 +121,20 @@ ${editorPost.content}
     <div className="flex flex-col h-full">
         <div className="flex justify-between items-center mb-6">
             <button onClick={onClose} className="text-sm text-gray-500 hover:text-black">← Back</button>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-4">
+                 {status && (
+                    <span
+                        role="alert"
+                        className={`text-sm font-mono ${
+                            status.type === 'error' ? 'text-red-500' :
+                            status.type === 'success' ? 'text-green-600' :
+                            'text-gray-500'
+                        }`}
+                    >
+                        {status.message}
+                    </span>
+                 )}
+                 <div className="flex gap-3">
                  <button
                     onClick={handleDownloadFile}
                     className="text-gray-500 hover:text-black px-4 py-2 font-mono text-sm underline"
@@ -131,6 +156,7 @@ ${editorPost.content}
                         </>
                     )}
                 </button>
+                </div>
             </div>
         </div>
 
