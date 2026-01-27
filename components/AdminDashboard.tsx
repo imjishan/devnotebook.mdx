@@ -18,14 +18,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
-  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     setLocalConfig(githubConfig);
   }, [githubConfig]);
 
   useEffect(() => {
-    if (status) {
+    if (status?.type === 'success') {
       const timer = setTimeout(() => setStatus(null), 3000);
       return () => clearTimeout(timer);
     }
@@ -34,7 +34,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveConfig = () => {
       setStatus(null);
       onSaveConfig(localConfig);
-      setStatus({ type: 'success', message: 'Configuration saved successfully' });
+      setShowConfig(false);
+      setStatus({ type: 'success', message: 'Configuration Saved' });
   };
 
   return (
@@ -56,41 +57,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
         </div>
 
+        {status && (
+          <div
+            role={status.type === 'error' ? 'alert' : 'status'}
+            className={`mb-6 p-3 text-sm font-mono border ${
+              status.type === 'success'
+                ? 'bg-green-50 text-green-800 border-green-200'
+                : 'bg-red-50 text-red-800 border-red-200'
+            }`}
+          >
+            {status.message}
+          </div>
+        )}
+
         {showConfig && (
             <div id="config-panel" className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="github-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
+                        <label htmlFor="repo-owner" className="block text-xs font-mono text-gray-500 mb-1">Repo Owner</label>
                         <input
-                            id="github-owner"
+                            id="repo-owner"
                             value={localConfig.owner}
                             onChange={e => setLocalConfig({...localConfig, owner: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. vercel"
                         />
                     </div>
                     <div>
-                        <label htmlFor="github-repo" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
+                        <label htmlFor="repo-name" className="block text-xs font-mono text-gray-500 mb-1">Repo Name</label>
                         <input
-                            id="github-repo"
+                            id="repo-name"
                             value={localConfig.repo}
                             onChange={e => setLocalConfig({...localConfig, repo: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. next.js"
                         />
                     </div>
                     <div>
-                        <label htmlFor="github-path" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="target-folder" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
-                            id="github-path"
+                            id="target-folder"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
                         />
                     </div>
                     <div>
-                        <label htmlFor="github-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="access-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
-                            id="github-token"
+                            id="access-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
