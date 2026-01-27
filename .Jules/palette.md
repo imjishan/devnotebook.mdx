@@ -5,3 +5,7 @@
 ## 2026-01-01 - Accessible Card Pattern
 **Learning:** Making entire cards clickable by adding `onClick` to container divs hurts accessibility.
 **Action:** Use a semantic `<button>` inside the card's heading with `before:absolute before:inset-0` to cover the card. This preserves keyboard navigation and screen reader semantics.
+
+## 2026-01-26 - Form Labeling & Feedback
+**Learning:** Configuration inputs relied on visual proximity for labeling, failing accessibility checks. Also, success alerts are disruptive.
+**Action:** Enforce explicit `id` and `htmlFor` linkage for all inputs. Use `role="status"` for non-intrusive success messages.

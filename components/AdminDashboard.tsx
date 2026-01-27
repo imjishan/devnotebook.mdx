@@ -32,6 +32,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [status]);
 
   const handleSaveConfig = () => {
+      setStatus(null);
       onSaveConfig(localConfig);
       setStatus({ type: 'success', message: 'Configuration saved successfully' });
   };
