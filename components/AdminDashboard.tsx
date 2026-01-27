@@ -58,6 +58,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
         </div>
 
+        {status && (
+          <div
+            role={status.type === 'error' ? 'alert' : 'status'}
+            className={`mb-6 p-3 text-sm font-mono border ${
+              status.type === 'success'
+                ? 'bg-green-50 text-green-800 border-green-200'
+                : 'bg-red-50 text-red-800 border-red-200'
+            }`}
+          >
+            {status.message}
+          </div>
+        )}
+
         {showConfig && (
             <div id="config-panel" className="bg-gray-50 p-6 border border-gray-200 mb-8 rounded-sm">
                 <h3 className="font-bold mb-4 text-sm uppercase tracking-widest">GitHub Configuration</h3>
@@ -81,9 +94,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                     <div>
-                        <label htmlFor="repo-path" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
+                        <label htmlFor="target-folder" className="block text-xs font-mono text-gray-500 mb-1">Target Folder</label>
                         <input
-                            id="repo-path"
+                            id="target-folder"
                             value={localConfig.path}
                             onChange={e => setLocalConfig({...localConfig, path: e.target.value})}
                             className="w-full border p-2 text-sm" placeholder="e.g. content/posts"
