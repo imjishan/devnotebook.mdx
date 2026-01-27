@@ -18,15 +18,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [localConfig, setLocalConfig] = useState(githubConfig);
-  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
     setLocalConfig(githubConfig);
   }, [githubConfig]);
 
   useEffect(() => {
-    if (status?.type === 'success') {
-      const timer = setTimeout(() => setStatus(null), 3000);
+    if (status) {
+      const timer = setTimeout(() => {
+        setStatus(null);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [status]);
@@ -34,8 +36,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveConfig = () => {
       setStatus(null);
       onSaveConfig(localConfig);
-      setShowConfig(false);
-      setStatus({ type: 'success', message: 'Configuration Saved' });
+      setStatus({ type: 'success', message: 'Configuration saved successfully' });
   };
 
   return (
@@ -45,10 +46,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex gap-4">
                  <button
                     onClick={() => setShowConfig(!showConfig)}
-                    className="text-sm font-mono text-gray-500 hover:text-black underline"
                     aria-expanded={showConfig}
                     aria-controls="config-panel"
-                >
+                    className="text-sm font-mono text-gray-500 hover:text-black underline"
+                 >
                     {showConfig ? 'Hide Config' : 'Connect Repo'}
                 </button>
                 <button onClick={onCreateNew} className="bg-black text-white px-4 py-2 font-mono text-sm hover:bg-gray-800">
@@ -102,9 +103,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                     <div>
-                        <label htmlFor="access-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
+                        <label htmlFor="repo-token" className="block text-xs font-mono text-gray-500 mb-1">Personal Access Token</label>
                         <input
-                            id="access-token"
+                            id="repo-token"
                             type="password"
                             value={localConfig.token}
                             onChange={e => setLocalConfig({...localConfig, token: e.target.value})}
@@ -112,12 +113,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
-                {status && (
-                    <div role="status" className={`mt-4 text-sm font-mono ${status.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
-                        {status.message}
-                    </div>
-                )}
-                <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                <div className="flex items-center gap-4 mt-4">
+                    <button onClick={handleSaveConfig} className="bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
+                    {status && (
+                        <span role="status" className={`text-xs font-mono ${status.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                            {status.message}
+                        </span>
+                    )}
+                </div>
             </div>
         )}
 
