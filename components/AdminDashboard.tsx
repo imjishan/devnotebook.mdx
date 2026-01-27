@@ -32,6 +32,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [status]);
 
   const handleSaveConfig = () => {
+      setStatus(null);
       onSaveConfig(localConfig);
       setShowConfig(false);
       setStatus({ type: 'success', message: 'Configuration Saved' });
@@ -111,6 +112,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                     </div>
                 </div>
+                {status && (
+                    <div role="status" className={`mt-4 text-sm font-mono ${status.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                        {status.message}
+                    </div>
+                )}
                 <button onClick={handleSaveConfig} className="mt-4 bg-gray-900 text-white text-xs px-4 py-2 hover:bg-black">Save Configuration</button>
             </div>
         )}
