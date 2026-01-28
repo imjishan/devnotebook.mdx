@@ -9,3 +9,7 @@
 ## 2025-10-27 - Non-blocking Success Feedback
 **Learning:** Native `alert()` dialogs for success states block user flow. Auto-dismissing inline messages feel smoother.
 **Action:** Use a local `status` state with `role="status"` for success messages, and use a `useEffect` to clear the message after 3 seconds.
+
+## 2026-01-28 - Accessible Naked Inputs
+**Learning:** "Naked" inputs (border-bottom only) are stylish but inaccessible by default due to missing visible labels.
+**Action:** Always add `aria-label` matching the placeholder text for inputs that lack a visible `<label>` element.
