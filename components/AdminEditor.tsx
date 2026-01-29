@@ -19,10 +19,20 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
   }, [initialPost]);
+
+  useEffect(() => {
+    if (status?.type === 'success') {
+      const timer = setTimeout(() => {
+        setStatus(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
 
   const generateFileContent = () => {
@@ -43,7 +53,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setStatus({ type: 'error', message: "Title and Slug are required." });
         return;
     }
     const fileContent = generateFileContent();
@@ -58,15 +68,16 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setStatus({ type: 'error', message: "Please provide a Title and Slug." });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setStatus({ type: 'error', message: "Please configure GitHub settings in the Dashboard first." });
           return;
       }
 
       setIsPublishing(true);
+      setStatus(null);
       const content = generateFileContent();
       const filename = `${editorPost.slug}.mdx`;
       const message = `feat(blog): update ${editorPost.slug}`;
@@ -75,7 +86,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setStatus({ type: 'success', message: "Successfully published to GitHub! 🚀" });
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -83,15 +94,19 @@ ${editorPost.content}
             tags: editorPost.tags || [],
           };
           onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+
+          setTimeout(() => {
+             onClose();
+          }, 1500);
       } else {
-          alert(`Error: ${result.error}`);
+          setStatus({ type: 'error', message: `Error: ${result.error}` });
       }
   };
 
   const handleAiGenerateDescription = useCallback(async () => {
       if (!editorPost.content) return;
       setIsProcessingAI(true);
+      setStatus(null);
       const desc = await generateSeoDescription(editorPost.content);
       setEditorPost(prev => ({ ...prev, description: desc }));
       setIsProcessingAI(false);
@@ -100,6 +115,7 @@ ${editorPost.content}
   const handleAiFixGrammar = useCallback(async () => {
       if (!editorPost.content) return;
       setIsProcessingAI(true);
+      setStatus(null);
       const fixed = await improveGrammar(editorPost.content);
       setEditorPost(prev => ({ ...prev, content: fixed }));
       setIsProcessingAI(false);
@@ -134,35 +150,61 @@ ${editorPost.content}
             </div>
         </div>
 
+        {status && (
+          <div
+            role={status.type === 'error' ? 'alert' : 'status'}
+            className={`mb-6 p-3 text-sm font-mono border ${
+              status.type === 'success'
+                ? 'bg-green-50 text-green-800 border-green-200'
+                : 'bg-red-50 text-red-800 border-red-200'
+            }`}
+          >
+            {status.message}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
-                <input
-                    type="text"
-                    placeholder="Post Title"
-                    className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
-                    value={editorPost.title}
-                    onChange={(e) => setEditorPost({...editorPost, title: e.target.value})}
-                />
-                 <div className="flex gap-4">
+                <div>
+                    <label htmlFor="post-title" className="block text-xs font-mono text-gray-400 mb-1">Post Title</label>
                     <input
+                        id="post-title"
                         type="text"
-                        placeholder="slug-url"
-                        className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
-                        value={editorPost.slug}
-                        onChange={(e) => setEditorPost({...editorPost, slug: e.target.value})}
+                        placeholder="Post Title"
+                        className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
+                        value={editorPost.title}
+                        onChange={(e) => setEditorPost({...editorPost, title: e.target.value})}
                     />
-                     <input
-                        type="text"
-                        placeholder="Category"
-                        className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
-                        value={editorPost.category}
-                        onChange={(e) => setEditorPost({...editorPost, category: e.target.value})}
-                    />
+                </div>
+                 <div className="flex gap-4">
+                    <div className="w-1/2">
+                        <label htmlFor="post-slug" className="block text-xs font-mono text-gray-400 mb-1">Slug URL</label>
+                        <input
+                            id="post-slug"
+                            type="text"
+                            placeholder="slug-url"
+                            className="w-full font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
+                            value={editorPost.slug}
+                            onChange={(e) => setEditorPost({...editorPost, slug: e.target.value})}
+                        />
+                    </div>
+                     <div className="w-1/2">
+                        <label htmlFor="post-category" className="block text-xs font-mono text-gray-400 mb-1">Category</label>
+                        <input
+                            id="post-category"
+                            type="text"
+                            placeholder="Category"
+                            className="w-full font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
+                            value={editorPost.category}
+                            onChange={(e) => setEditorPost({...editorPost, category: e.target.value})}
+                        />
+                    </div>
                  </div>
 
                  <div className="relative">
-                    <label className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
+                    <label htmlFor="seo-desc" className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
                     <textarea
+                        id="seo-desc"
                         className="w-full border border-gray-200 p-2 text-sm focus:outline-none focus:border-black min-h-[80px]"
                         value={editorPost.description}
                         onChange={(e) => setEditorPost({...editorPost, description: e.target.value})}
