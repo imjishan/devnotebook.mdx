@@ -9,3 +9,7 @@
 ## 2025-10-27 - Non-blocking Success Feedback
 **Learning:** Native `alert()` dialogs for success states block user flow. Auto-dismissing inline messages feel smoother.
 **Action:** Use a local `status` state with `role="status"` for success messages, and use a `useEffect` to clear the message after 3 seconds.
+
+## 2026-10-28 - Delayed Navigation for Feedback
+**Learning:** When replacing blocking alerts with inline feedback before a navigation action (like closing a modal), the user needs time to read the message before the component unmounts.
+**Action:** Introduce a short delay (e.g., 2000ms) using `setTimeout` after setting the success state and before triggering the navigation/close callback.
