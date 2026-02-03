@@ -9,3 +9,7 @@
 ## 2025-10-27 - Non-blocking Success Feedback
 **Learning:** Native `alert()` dialogs for success states block user flow. Auto-dismissing inline messages feel smoother.
 **Action:** Use a local `status` state with `role="status"` for success messages, and use a `useEffect` to clear the message after 3 seconds.
+
+## 2025-10-28 - Delayed Navigation on Success
+**Learning:** When replacing blocking `alert()` with non-blocking toasts before a view change, the user needs time to read the message.
+**Action:** Implement a short delay (e.g., 2000ms) using `setTimeout` before navigating away or unmounting the component when a success toast is shown.
