@@ -19,6 +19,14 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+
+  useEffect(() => {
+      if (notification?.type === 'success') {
+          const timer = setTimeout(() => setNotification(null), 3000);
+          return () => clearTimeout(timer);
+      }
+  }, [notification]);
 
   useEffect(() => {
       setEditorPost(initialPost);
@@ -43,7 +51,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        setNotification({ type: 'error', message: "Title and Slug are required." });
         return;
     }
     const fileContent = generateFileContent();
@@ -58,11 +66,11 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          setNotification({ type: 'error', message: "Please provide a Title and Slug." });
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          setNotification({ type: 'error', message: "Please configure GitHub settings in the Dashboard first." });
           return;
       }
 
@@ -75,7 +83,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          setNotification({ type: 'success', message: "Successfully published to GitHub! 🚀" });
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -83,9 +91,9 @@ ${editorPost.content}
             tags: editorPost.tags || [],
           };
           onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+          setTimeout(() => onClose(), 1500); // Wait for success message to be seen
       } else {
-          alert(`Error: ${result.error}`);
+          setNotification({ type: 'error', message: `Error: ${result.error}` });
       }
   };
 
@@ -106,7 +114,22 @@ ${editorPost.content}
   }, [editorPost.content]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+        {notification && (
+            <div
+                role={notification.type === 'error' ? 'alert' : 'status'}
+                className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-lg border text-sm font-mono animate-fade-in-down ${
+                    notification.type === 'error'
+                    ? 'bg-red-50 border-red-200 text-red-800'
+                    : 'bg-green-50 border-green-200 text-green-800'
+                }`}
+            >
+                {notification.message}
+                {notification.type === 'error' && (
+                    <button onClick={() => setNotification(null)} className="ml-4 font-bold hover:opacity-75">×</button>
+                )}
+            </div>
+        )}
         <div className="flex justify-between items-center mb-6">
             <button onClick={onClose} className="text-sm text-gray-500 hover:text-black">← Back</button>
             <div className="flex gap-3">
