@@ -19,11 +19,18 @@ export const AdminEditor: React.FC<AdminEditorProps> = ({
   const [editorPost, setEditorPost] = useState<Partial<BlogPost>>(initialPost);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
       setEditorPost(initialPost);
   }, [initialPost]);
 
+  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+      setNotification({ message, type });
+      if (type === 'success') {
+          setTimeout(() => setNotification(null), 3000);
+      }
+  };
 
   const generateFileContent = () => {
       return `---
@@ -43,7 +50,7 @@ ${editorPost.content}
 
   const handleDownloadFile = () => {
     if (!editorPost.title || !editorPost.slug) {
-        alert("Title and Slug are required.");
+        showNotification("Title and Slug are required.", 'error');
         return;
     }
     const fileContent = generateFileContent();
@@ -58,11 +65,11 @@ ${editorPost.content}
 
   const handlePublishToGithub = async () => {
       if (!editorPost.slug || !editorPost.title) {
-          alert("Please provide a Title and Slug.");
+          showNotification("Please provide a Title and Slug.", 'error');
           return;
       }
       if (!githubConfig.token || !githubConfig.repo) {
-          alert("Please configure GitHub settings in the Dashboard first.");
+          showNotification("Please configure GitHub settings in the Dashboard first.", 'error');
           return;
       }
 
@@ -75,7 +82,7 @@ ${editorPost.content}
 
       setIsPublishing(false);
       if (result.success) {
-          alert("Successfully published to GitHub! 🚀");
+          showNotification("Successfully published to GitHub! 🚀", 'success');
 
           const newPostObj = {
             ...editorPost as BlogPost,
@@ -83,9 +90,10 @@ ${editorPost.content}
             tags: editorPost.tags || [],
           };
           onUpdateLocal(newPostObj);
-          onClose(); // Go back to dashboard
+          // Small delay to let user see success message
+          setTimeout(onClose, 1500);
       } else {
-          alert(`Error: ${result.error}`);
+          showNotification(`Error: ${result.error}`, 'error');
       }
   };
 
@@ -134,10 +142,18 @@ ${editorPost.content}
             </div>
         </div>
 
+        {notification && (
+            <div role="alert" className={`mb-4 p-3 rounded text-sm font-mono flex items-center gap-2 ${notification.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                <span>{notification.type === 'success' ? '✓' : '⚠'}</span>
+                {notification.message}
+            </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="space-y-4">
                 <input
                     type="text"
+                    aria-label="Post Title"
                     placeholder="Post Title"
                     className="w-full text-2xl font-bold border-b border-gray-200 py-2 focus:outline-none focus:border-black"
                     value={editorPost.title}
@@ -146,6 +162,7 @@ ${editorPost.content}
                  <div className="flex gap-4">
                     <input
                         type="text"
+                        aria-label="URL Slug"
                         placeholder="slug-url"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.slug}
@@ -153,6 +170,7 @@ ${editorPost.content}
                     />
                      <input
                         type="text"
+                        aria-label="Category"
                         placeholder="Category"
                         className="w-1/2 font-mono text-sm border-b border-gray-200 py-2 focus:outline-none focus:border-black text-gray-600"
                         value={editorPost.category}
@@ -161,8 +179,9 @@ ${editorPost.content}
                  </div>
 
                  <div className="relative">
-                    <label className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
+                    <label htmlFor="seo-desc" className="block text-xs font-mono text-gray-400 mb-1">SEO Description</label>
                     <textarea
+                        id="seo-desc"
                         className="w-full border border-gray-200 p-2 text-sm focus:outline-none focus:border-black min-h-[80px]"
                         value={editorPost.description}
                         onChange={(e) => setEditorPost({...editorPost, description: e.target.value})}
@@ -195,6 +214,7 @@ ${editorPost.content}
                  </button>
              </div>
             <textarea
+                aria-label="Post Content"
                 className="w-full h-full p-6 font-mono text-sm leading-relaxed border border-gray-200 focus:outline-none resize-none bg-gray-50 text-gray-800"
                 value={editorPost.content}
                 onChange={(e) => setEditorPost({...editorPost, content: e.target.value})}
